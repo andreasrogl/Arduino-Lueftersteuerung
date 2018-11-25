@@ -22,7 +22,7 @@
 Adafruit_SSD1306 display(OLED_RESET);  //Bildschirm
 BME280_I2C Aussensensor(0x76);         //Temperatursensor
 BME280_I2C Innensensor(0x77);
-int TEST=0;
+
 //PINBELEGUNG
 // Relais(Lüftung an Pin1)
 //
