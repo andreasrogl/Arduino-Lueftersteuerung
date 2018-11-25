@@ -3,12 +3,13 @@
 /*
  * V0_02  Bildschirm gibt Werte aus und Relais schaltet basierend auf Schalter
  *        Temperatursensoren werden ausgelesen und ausgegeben
- * 
- * 
+ *
+ *
  */
 /**************************************************************************/
 //Eine Teständerung
 //Zweite Änderung
+//Mit Atom 
 // Für den Bildschirm
 #include <SPI.h>
 #include <Wire.h>
@@ -20,9 +21,9 @@
 #define OLED_RESET 4
 Adafruit_SSD1306 display(OLED_RESET);  //Bildschirm
 BME280_I2C Aussensensor(0x76);         //Temperatursensor
-BME280_I2C Innensensor(0x77);  
+BME280_I2C Innensensor(0x77);
 
-//PINBELEGUNG 
+//PINBELEGUNG
 // Relais(Lüftung an Pin1)
 //
 //
@@ -47,10 +48,10 @@ int debug = 1;
 int Luefterstatus=0;   //0 Für Lüftung aus, 1 für Lüftung an.
 double DruckAussen =0;
 double TemperaturAussen =0;
-double FeuchtigkeitAussen =0;           
+double FeuchtigkeitAussen =0;
 double DruckInnen =0;
 double TemperaturInnen =0;
-double FeuchtigkeitInnen =0;   
+double FeuchtigkeitInnen =0;
 
 
 bool Sensorauslesen();
@@ -59,7 +60,7 @@ bool Schalten(int Luefterstatus);
 bool Pruefen();
 
 
-void setup()   {                
+void setup()   {
   Serial.begin(9600);
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // Bildschirm initialize with the I2C addr 0x3C (for the 128x32)
   if (!Aussensensor.begin()) {
@@ -72,10 +73,10 @@ void setup()   {
     Serial.println("Bitte überprüfen Sie die Verkabelung!");
     while (1);
   }
- 
+
   Aussensensor.setTempCal(-1);
   Innensensor.setTempCal(0);
- //Pinbelegung 
+ //Pinbelegung
   pinMode(RELAIS,OUTPUT);
 
 }
@@ -84,7 +85,7 @@ void setup()   {
 void loop() {
   // draw a white circle, 10 pixel radius
   if(DEBUG){debug=analogRead(DEBUGPIN);}
-    
+
   Sensorauslesen();
   Luefterstatus=Pruefen();
   Luefterstatus=Schalten(Luefterstatus);
@@ -95,11 +96,11 @@ void loop() {
 
 bool Sensorauslesen ()
 {
-  Aussensensor.readSensor();  
+  Aussensensor.readSensor();
   DruckAussen=  Aussensensor.getPressure_MB();
   FeuchtigkeitAussen= Aussensensor.getHumidity();
   TemperaturAussen=Aussensensor.getTemperature_C();
-  Innensensor.readSensor();  
+  Innensensor.readSensor();
   DruckInnen=  Innensensor.getPressure_MB();
   FeuchtigkeitInnen= Innensensor.getHumidity();
   TemperaturInnen=Innensensor.getTemperature_C();
@@ -122,7 +123,7 @@ void Bildschirm()
   display.print (int(FeuchtigkeitAussen));
   display.print("% ");
   display.print (DruckAussen);
-  display.println("m");  
+  display.println("m");
   display.setCursor(4,24);
   display.print("I:");
   display.print (TemperaturInnen);
@@ -130,9 +131,9 @@ void Bildschirm()
   display.print (int(FeuchtigkeitInnen));
   display.print("% ");
   display.print (DruckInnen);
-  display.println("m");  
+  display.println("m");
   display.display();
-  
+
   Serial.print(Luefterstatus);
   Serial.println(debug);
 }
@@ -149,7 +150,7 @@ bool Schalten(int Luefterstatus)
       digitalWrite(RELAIS,LOW);
       return false;
     }
-    
+
 }
 
 
