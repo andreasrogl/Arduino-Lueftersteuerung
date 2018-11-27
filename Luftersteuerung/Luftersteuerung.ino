@@ -60,6 +60,7 @@ void Bildschirm();
 bool Schalten(int Luefterstatus);
 bool Pruefen();
 void rtcReadTime();
+byte bcdToDec(byte val);
 void Testfunktion();
 
 void setup()   {                
@@ -128,12 +129,12 @@ void Bildschirm()
   display.setCursor(4,4);
   display.print("L:");
   display.print(Luefterstatus);
-  display.print(" ");
+  display.print(" T:");
   display.print(tag);
   display.print(".");
   display.print(monat);
-  display.print(".");
-  display.print(jahr);
+  //display.print(".");
+  //display.print(jahr);
   display.print(" ");
   display.print(stunde);
   display.print(":");
@@ -203,17 +204,20 @@ void rtcReadTime()
   Wire.write(0);
   Wire.endTransmission();
   Wire.requestFrom(RTC_I2C_ADDRESS, 7);
-  sekunde    = Wire.read() ;
-  minute     = Wire.read(); 
-  stunde     = Wire.read(); 
+    sekunde    = bcdToDec(Wire.read() & 0x7f);
+  minute     = bcdToDec(Wire.read()); 
+  stunde     = bcdToDec(Wire.read() & 0x3f); 
   //Der Wochentag wird hier nicht ausgelesen da dieses mit 
   //dem Modul RTC DS3231 nicht über die Wire.h zuverlässig funktioniert.
-  // wochentag  =  
-  Wire.read();
-  tag        = Wire.read();
-  monat      = Wire.read();
-  jahr       = Wire.read();   
+  /* wochentag  =*/ bcdToDec(Wire.read());
+  tag        = bcdToDec(Wire.read());
+  monat      = bcdToDec(Wire.read());
+  jahr       = bcdToDec(Wire.read())+2000;   
    
+}
+//Convertiert binäre Zeichen in Dezimal Zeichen.
+byte bcdToDec(byte val){
+  return ( (val/16*10) + (val%16) );
 }
 
 void Testfunktion()
