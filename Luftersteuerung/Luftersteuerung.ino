@@ -1,8 +1,10 @@
 /*********************************************************************
 // Lüfersteuerung basierend auf Temperatur, Druck, Feuchtigkeit
 /*
- * V0_02  Bildschirm gibt Werte aus und Relais schaltet basierend auf Schalter
+ * V1_03  Bildschirm gibt Werte aus und Relais schaltet basierend auf Schalter
  *        Temperatursensoren werden ausgelesen und ausgegeben
+ *        Uhr wir mit eingefügt
+ * 
  *
  *
  */
@@ -19,6 +21,7 @@
 
 // Für den Bildschirm
 #define OLED_RESET 4
+#define RTC_I2C_ADDRESS 0x68 // I2C Adresse des RTC  DS323
 Adafruit_SSD1306 display(OLED_RESET);  //Bildschirm
 BME280_I2C Aussensensor(0x76);         //Temperatursensor
 BME280_I2C Innensensor(0x77);
@@ -52,13 +55,14 @@ double FeuchtigkeitAussen =0;
 double DruckInnen =0;
 double TemperaturInnen =0;
 double FeuchtigkeitInnen =0;
-
+int jahr,monat,tag,stunde,minute,sekunde, wochentag;
 
 bool Sensorauslesen();
 void Bildschirm();
 bool Schalten(int Luefterstatus);
 bool Pruefen();
-
+void rtcReadTime();
+void Testfunktion();
 
 void setup()   {
   Serial.begin(9600);
@@ -84,7 +88,10 @@ void setup()   {
 
 void loop() {
   // draw a white circle, 10 pixel radius
-  if(DEBUG){debug=analogRead(DEBUGPIN);}
+  if(DEBUG){
+    debug=analogRead(DEBUGPIN);
+    Testfunktion();
+  }
 
   Sensorauslesen();
   Luefterstatus=Pruefen();
@@ -96,14 +103,20 @@ void loop() {
 
 bool Sensorauslesen ()
 {
+// Aussensensor  
   Aussensensor.readSensor();
   DruckAussen=  Aussensensor.getPressure_MB();
   FeuchtigkeitAussen= Aussensensor.getHumidity();
   TemperaturAussen=Aussensensor.getTemperature_C();
+  
+//Innensensor
   Innensensor.readSensor();
   DruckInnen=  Innensensor.getPressure_MB();
   FeuchtigkeitInnen= Innensensor.getHumidity();
   TemperaturInnen=Innensensor.getTemperature_C();
+
+// Uhrzeit
+  rtcReadTime();
 
   return true;
 }
@@ -167,4 +180,43 @@ bool Pruefen()
         return false;
       }
     }
+}
+
+//Liest die Zeit von der Digitalen Uhr
+void rtcReadTime()
+{
+   
+  Wire.beginTransmission(RTC_I2C_ADDRESS); //Aufbau der Verbindung zur Adresse 0x68
+  Wire.write(0);
+  Wire.endTransmission();
+  Wire.requestFrom(RTC_I2C_ADDRESS, 7);
+  sekunde    = Wire.read() ;
+  minute     = Wire.read(); 
+  stunde     = Wire.read(); 
+  //Der Wochentag wird hier nicht ausgelesen da dieses mit 
+  //dem Modul RTC DS3231 nicht über die Wire.h zuverlässig funktioniert.
+  // wochentag  =  
+  Wire.read();
+  tag        = Wire.read();
+  monat      = Wire.read();
+  jahr       = Wire.read();   
+   
+}
+
+
+void Testfunktion()
+{
+  Serial.print(stunde);
+ Serial.print(" ");
+ Serial.print(minute);
+ Serial.print(" ");
+ Serial.print(sekunde);
+ Serial.print("   ");
+ Serial.print(tag);
+ Serial.print(" ");
+ Serial.print(monat);
+ Serial.print(" ");
+ Serial.print(jahr);
+ Serial.println(" ");
+
 }
