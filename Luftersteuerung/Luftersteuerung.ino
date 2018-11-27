@@ -1,32 +1,30 @@
+#include <cactus_io_BME280_I2C.h>
+
 /*********************************************************************
 // Lüfersteuerung basierend auf Temperatur, Druck, Feuchtigkeit
 /*
- * V1_03  Bildschirm gibt Werte aus und Relais schaltet basierend auf Schalter
+ * V0_02  Bildschirm gibt Werte aus und Relais schaltet basierend auf Schalter
  *        Temperatursensoren werden ausgelesen und ausgegeben
- *        Uhr wir mit eingefügt
  * 
- *
- *
+ * 
  */
 /**************************************************************************/
 //Eine Teständerung
-//Achso
-
 // Für den Bildschirm
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include "cactus_io_BME280_I2C.h"
+
 
 // Für den Bildschirm
 #define OLED_RESET 4
 #define RTC_I2C_ADDRESS 0x68 // I2C Adresse des RTC  DS323
 Adafruit_SSD1306 display(OLED_RESET);  //Bildschirm
 BME280_I2C Aussensensor(0x76);         //Temperatursensor
-BME280_I2C Innensensor(0x77);
+BME280_I2C Innensensor(0x77);  
 
-//PINBELEGUNG
+//PINBELEGUNG 
 // Relais(Lüftung an Pin1)
 //
 //
@@ -51,10 +49,10 @@ int debug = 1;
 int Luefterstatus=0;   //0 Für Lüftung aus, 1 für Lüftung an.
 double DruckAussen =0;
 double TemperaturAussen =0;
-double FeuchtigkeitAussen =0;
+double FeuchtigkeitAussen =0;           
 double DruckInnen =0;
 double TemperaturInnen =0;
-double FeuchtigkeitInnen =0;
+double FeuchtigkeitInnen =0;   
 int jahr,monat,tag,stunde,minute,sekunde, wochentag;
 
 bool Sensorauslesen();
@@ -64,7 +62,7 @@ bool Pruefen();
 void rtcReadTime();
 void Testfunktion();
 
-void setup()   {
+void setup()   {                
   Serial.begin(9600);
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // Bildschirm initialize with the I2C addr 0x3C (for the 128x32)
   if (!Aussensensor.begin()) {
@@ -77,10 +75,10 @@ void setup()   {
     Serial.println("Bitte überprüfen Sie die Verkabelung!");
     while (1);
   }
-
+ 
   Aussensensor.setTempCal(-1);
   Innensensor.setTempCal(0);
- //Pinbelegung
+ //Pinbelegung 
   pinMode(RELAIS,OUTPUT);
 
 }
@@ -91,8 +89,8 @@ void loop() {
   if(DEBUG){
     debug=analogRead(DEBUGPIN);
     Testfunktion();
-  }
-
+    }
+    
   Sensorauslesen();
   Luefterstatus=Pruefen();
   Luefterstatus=Schalten(Luefterstatus);
@@ -103,19 +101,19 @@ void loop() {
 
 bool Sensorauslesen ()
 {
-// Aussensensor  
-  Aussensensor.readSensor();
+  // Aussensensor  
+  Aussensensor.readSensor();  
   DruckAussen=  Aussensensor.getPressure_MB();
   FeuchtigkeitAussen= Aussensensor.getHumidity();
   TemperaturAussen=Aussensensor.getTemperature_C();
-  
-//Innensensor
-  Innensensor.readSensor();
+
+  //Innensensor
+  Innensensor.readSensor();  
   DruckInnen=  Innensensor.getPressure_MB();
   FeuchtigkeitInnen= Innensensor.getHumidity();
   TemperaturInnen=Innensensor.getTemperature_C();
 
-// Uhrzeit
+  // Uhrzeit
   rtcReadTime();
 
   return true;
@@ -126,9 +124,23 @@ void Bildschirm()
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(WHITE);
+  //Erste Zeile
   display.setCursor(4,4);
   display.print("L:");
-  display.println(Luefterstatus);
+  display.print(Luefterstatus);
+  display.print(" ");
+  display.print(tag);
+  display.print(".");
+  display.print(monat);
+  display.print(".");
+  display.print(jahr);
+  display.print(" ");
+  display.print(stunde);
+  display.print(":");
+  display.print(minute);
+  display.print(":");
+  display.println(sekunde);
+  //Zweite Zeile
   display.setCursor(4,14);
   display.print("A:");
   display.print (TemperaturAussen);
@@ -136,7 +148,7 @@ void Bildschirm()
   display.print (int(FeuchtigkeitAussen));
   display.print("% ");
   display.print (DruckAussen);
-  display.println("m");
+  display.println("m");  
   display.setCursor(4,24);
   display.print("I:");
   display.print (TemperaturInnen);
@@ -144,9 +156,9 @@ void Bildschirm()
   display.print (int(FeuchtigkeitInnen));
   display.print("% ");
   display.print (DruckInnen);
-  display.println("m");
+  display.println("m");  
   display.display();
-
+  
   Serial.print(Luefterstatus);
   Serial.println(debug);
 }
@@ -163,7 +175,7 @@ bool Schalten(int Luefterstatus)
       digitalWrite(RELAIS,LOW);
       return false;
     }
-
+    
 }
 
 
@@ -181,6 +193,7 @@ bool Pruefen()
       }
     }
 }
+
 
 //Liest die Zeit von der Digitalen Uhr
 void rtcReadTime()
@@ -202,7 +215,6 @@ void rtcReadTime()
   jahr       = Wire.read();   
    
 }
-
 
 void Testfunktion()
 {
